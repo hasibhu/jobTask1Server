@@ -9,6 +9,11 @@ const bodyParser = require('body-parser');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 // Middleware
+const corsOptions = {
+    origin: ['http://localhost:5173', 'https://job-task1-web.vercel.app/', 'https://assisnment11web.web.app'],
+    credentials: true,
+    optionSuccessStatus: 200,
+};
 app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json());
