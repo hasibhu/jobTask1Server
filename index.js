@@ -10,7 +10,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 // Middleware
 const corsOptions = {
-    origin: ['http://localhost:5173', 'https://job-task1-web.vercel.app/', 'https://assisnment11web.web.app'],
+    origin: ['http://localhost:5173', 'https://job-task1-web.vercel.app/', 'https://job-task1-web.vercel.app/'],
     credentials: true,
     optionSuccessStatus: 200,
 };
