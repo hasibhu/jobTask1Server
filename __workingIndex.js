@@ -1,3 +1,6 @@
+
+
+
 const express = require("express");
 const app = express();
 const cors = require("cors");
@@ -208,7 +211,7 @@ app.patch('/users/status/:id', authenticateToken, async (req, res) => {
 
 
 
-// for dashboard 
+
 app.get('/api/users/:id', async (req, res) => {
     try {
         const user = await usersCollection.findOne({ _id: new ObjectId(req.params.id) });
@@ -229,7 +232,7 @@ app.post('/users', async (req, res) => {
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        const user = {name, email, phoneNumber, password: hashedPassword, role };
+        const user = { name, email, phoneNumber, password: hashedPassword, role };
 
         const query = { email: user.email };
         const userExist = await usersCollection.findOne(query);
@@ -297,9 +300,9 @@ app.post('/sendRequest', async (req, res) => {
     const { agentPhoneNumber, userPhoneNumber, amount, status, date, type } = req.body;
 
     try {
-       
-        const request = { agentPhoneNumber, userPhoneNumber, amount, status, date, type  };
-        
+
+        const request = { agentPhoneNumber, userPhoneNumber, amount, status, date, type };
+
         const result = await requestsCollection.insertOne(request);
         res.status(200).json({ message: 'User added to the database', insertedId: result.insertedId });
     } catch (error) {
@@ -379,6 +382,11 @@ app.patch('/users/:id/balance', async (req, res) => {
     }
 });
 
+
+
+
+
+
 // Add Transaction 
 app.post('/transactions', async (req, res) => {
     const { userId, date, type, direction, senderName, amount } = req.body;
@@ -417,6 +425,14 @@ app.post('/transactions', async (req, res) => {
     }
 });
 
+
+
+
+
+
+
+
+
 // Delete Request 
 
 app.delete('/requests/:id', async (req, res) => {
@@ -437,20 +453,7 @@ app.delete('/requests/:id', async (req, res) => {
 });
 
 
-// agent cirrent balance 
 
-app.get('/api/agentBalance/:id', async (req, res) => {
-    try {
-        const user = await usersCollection.findOne({ _id: new ObjectId(req.params.id) });
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        res.json({ balance: user.currentBalance });
-    } catch (error) {
-        console.error('Error fetching user:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-});
 
 
 
