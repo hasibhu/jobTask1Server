@@ -457,6 +457,59 @@ app.get('/api/agentBalance/:id', async (req, res) => {
     }
 });
 
+// agent history 
+
+// app.get('/api/agentHistory/:userId', async (req, res) => {
+//     try {
+//         const user = await usersCollection.findOne({ _id: new ObjectId(req.params.id) });
+//         if (!user) {
+//             return res.status(404).json({ message: 'User not found' });
+//         }
+//         res.json({ user });
+//     } catch (error) {
+//         console.error('Error fetching user:', error);
+//         res.status(500).json({ message: 'Internal server error' });
+//     }
+// });
+
+app.get('/api/agentHistory/:userId', async (req, res) => {
+    try {
+        const user = await usersCollection.findOne({ _id: new ObjectId(req.params.userId) });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.json({ transactions: user.transactions }); // Assuming transactions is an array in user document
+    } catch (error) {
+        console.error('Error fetching user:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
