@@ -103,70 +103,8 @@ app.post("/api/authenticate", async (req, res) => {
 });
 
 // User status change API (Protected)
-// app.patch('/users/status/:id', authenticateToken, async (req, res) => {
-//     const { id } = req.params;
-//     const { status } = req.body;
 
-//     try {
-//         const user = await usersCollection.findOne({ _id: new ObjectId(id) });
-//         if (!user) {
-//             return res.status(404).json({ message: 'User not found' });
-//         }
-//         const updateData = { status };
-//         // Add currentBalance only if it doesn't already exist
-//         if (user.currentBalance === undefined) {
-//             updateData.currentBalance = 40;
-//         }
-//         const result = await usersCollection.updateOne(
-//             { _id: new ObjectId(id) },
-//             { $set: updateData }
-//         );
-//         if (result.modifiedCount > 0) {
-//             res.json({ modifiedCount: result.modifiedCount });
-//         } else {
-//             res.status(404).json({ message: 'User not found or status already set' });
-//         }
-//     } catch (error) {
-//         console.error('Error updating user status:', error);
-//         res.status(500).json({ message: 'Internal server error' });
-//     }
-// });
-// app.patch('/users/status/:id', authenticateToken, async (req, res) => {
-//     const { id } = req.params;
-//     const { status } = req.body;
-
-//     try {
-//         const user = await usersCollection.findOne({ _id: new ObjectId(id) });
-//         if (!user) {
-//             return res.status(404).json({ message: 'User not found' });
-//         }
-
-//         const updateData = { status };
-
-//         // Add currentBalance only if status is changing from pending to active and currentBalance is undefined
-//         if (status === 'active' && user.status === 'pending' && user.currentBalance === undefined) {
-//             updateData.currentBalance = user.role === 'agent' ? 5000 : 40;
-//         }
-
-//         const result = await usersCollection.updateOne(
-//             { _id: new ObjectId(id) },
-//             { $set: updateData }
-//         );
-
-//         if (result.modifiedCount > 0) {
-//             res.json({ modifiedCount: result.modifiedCount });
-//         } else {
-//             res.status(404).json({ message: 'User not found or status already set' });
-//         }
-//     } catch (error) {
-//         console.error('Error updating user status:', error);
-//         res.status(500).json({ message: 'Internal server error' });
-//     }
-// });
-
-// dashboard component id specific user role finiding api
-
-app.patch("/users/status/:id", authenticateToken, async (req, res) => {
+app.patch("/users/status/:id", async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
 
@@ -179,31 +117,34 @@ app.patch("/users/status/:id", authenticateToken, async (req, res) => {
     const updateData = { status };
     let newTransaction = null;
 
-    // Add currentBalance only if status is changing from pending to active and currentBalance is undefined
+    // Determine the bonus amount based on the user's role
+    const bonusAmount = user.role === "agent" ? 50000 : 40;
+
+    // Check if the current balance is zero and the status is pending
     if (
       status === "active" &&
       user.status === "pending" &&
-      user.currentBalance === undefined
+      user.currentBalance === 0
     ) {
-      const bonusAmount = user.role === "agent" ? 5000 : 40;
-      updateData.currentBalance = bonusAmount;
+      // Add the bonus amount to currentBalance
+      updateData.currentBalance = user.currentBalance + bonusAmount;
+
+      // Create a new transaction
       newTransaction = {
-        id: new ObjectId(),
+        id: new ObjectId(), // Unique ID for the transaction
         date: new Date(),
         type: "incoming",
         senderName: "admin",
         amount: bonusAmount,
       };
+
+      // Add the new transaction to the user's transaction list
+      updateData.transactions = user.transactions
+        ? [...user.transactions, newTransaction]
+        : [newTransaction];
     }
 
-    if (newTransaction) {
-      if (!user.transactions) {
-        user.transactions = [];
-      }
-      user.transactions.push(newTransaction);
-      updateData.transactions = user.transactions;
-    }
-
+    // Perform the update
     const result = await usersCollection.updateOne(
       { _id: new ObjectId(id) },
       { $set: updateData }
@@ -220,7 +161,7 @@ app.patch("/users/status/:id", authenticateToken, async (req, res) => {
   }
 });
 
-// for dashboard
+//
 app.get("/api/users/:id", async (req, res) => {
   try {
     const user = await usersCollection.findOne({
@@ -237,11 +178,20 @@ app.get("/api/users/:id", async (req, res) => {
 });
 
 app.post("/users", async (req, res) => {
-  const { name, email, phoneNumber, password, role } = req.body;
+  const { name, email, phoneNumber, password, role, status, currentBalance } =
+    req.body;
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = { name, email, phoneNumber, password: hashedPassword, role };
+    const user = {
+      name,
+      email,
+      phoneNumber,
+      password: hashedPassword,
+      role,
+      status,
+      currentBalance,
+    };
 
     const query = { email: user.email };
     const userExist = await usersCollection.findOne(query);
